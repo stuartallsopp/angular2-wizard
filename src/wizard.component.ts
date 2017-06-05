@@ -1,4 +1,7 @@
-import { Component, OnInit, Output, EventEmitter, ContentChildren, QueryList, AfterContentInit } from '@angular/core';
+import {
+    Component, OnInit, Output, EventEmitter, ContentChildren, QueryList, AfterContentInit,
+    Input
+} from '@angular/core';
 import { WizardStepComponent } from './wizard-step.component';
 
 @Component({
@@ -16,6 +19,7 @@ import { WizardStepComponent } from './wizard-step.component';
       <ng-content></ng-content>
     </div>
     <div class="card-footer" [hidden]="isCompleted">
+        <button type="button" class="btn btn-secondary float-left" (click)="cancel()" [hidden]="!hasCancelWizard">Cancel</button>
         <button type="button" class="btn btn-secondary float-left" (click)="previous()" [hidden]="!hasPrevStep || !activeStep.showPrev">Previous</button>
         <button type="button" class="btn btn-secondary float-right" (click)="next()" [disabled]="!activeStep.isValid" [hidden]="!hasNextStep || !activeStep.showNext">Next</button>
         <button type="button" class="btn btn-secondary float-right" (click)="complete()" [disabled]="!activeStep.isValid" [hidden]="hasNextStep">Done</button>
@@ -43,6 +47,8 @@ export class WizardComponent implements OnInit, AfterContentInit {
 
   @Output()
   onStepChanged: EventEmitter<WizardStepComponent> = new EventEmitter<WizardStepComponent>();
+  @Output() onWizardCancel : EventEmitter = new EventEmitter();
+  @Input() canCancel;
 
   constructor() { }
 
@@ -86,6 +92,10 @@ export class WizardComponent implements OnInit, AfterContentInit {
     return this.activeStepIndex > 0;
   }
 
+  get hasCancelWizard():boolean{
+    return (this.canCancel==1 || this.canCancel==true || this.canCancel=='true');
+  }
+
   goToStep(step: WizardStepComponent) {
     if (!this.isCompleted) {
       this.activeStep = step;
@@ -99,6 +109,11 @@ export class WizardComponent implements OnInit, AfterContentInit {
       nextStep.isDisabled = false;
       this.activeStep = nextStep;
     }
+  }
+
+  cancel()
+  {
+    this.onWizardCancel.emit();
   }
 
   previous() {
